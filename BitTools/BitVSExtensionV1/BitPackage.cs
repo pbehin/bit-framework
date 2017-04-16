@@ -30,7 +30,7 @@ namespace BitVSExtensionV1
     {
         private const string PackageGuidString = "F5222FDA-2C19-434B-9343-B0E942816E4C";
         private const string BitVSExtensionName = "Bit VS Extension V1";
-
+        private IVsStatusbar _vsStatusBar;
         public BitPacakge()
         {
 
@@ -112,6 +112,23 @@ namespace BitVSExtensionV1
 
                 RedirectAssembly("System.Collections.Immutable", new Version("1.1.37"), "b03f5f7f11d50a3a");
             }
+        }
+
+        private void DisplayMessageOnStatusBar(string message)
+        {
+            object icon = (short)Microsoft.VisualStudio.Shell.Interop.Constants.SBAI_Deploy;
+
+            int frozen;
+
+            _vsStatusBar.IsFrozen(out frozen);
+
+            if (frozen == 0 && _vsStatusBar != null)
+            {
+                _vsStatusBar.Animation(1, ref icon);
+                _vsStatusBar.SetText(message);
+            }
+
+            _vsStatusBar.FreezeOutput(0);
         }
 
         public void RedirectAssembly(string shortName, Version targetVersion, string publicKeyToken)
@@ -201,6 +218,7 @@ namespace BitVSExtensionV1
 
         public void Log(string text)
         {
+            DisplayMessageOnStatusBar(text);
             OutputWindowPane outputPane = _outputWindow.OutputWindowPanes.Cast<OutputWindowPane>()
                 .SingleOrDefault(x => x.Name == BitVSExtensionName);
 
